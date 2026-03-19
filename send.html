@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sonics AI — Email Sender</title>
+<style>
+  body { font-family: sans-serif; max-width: 680px; margin: 40px auto; padding: 0 20px; background: #f9f9f9; color: #222; }
+  h2 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .sub { color: #666; font-size: 14px; margin-bottom: 24px; }
+  .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .label { font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .value { font-size: 14px; color: #222; margin-bottom: 16px; }
+  .body-preview { font-size: 13px; color: #444; white-space: pre-wrap; background: #f5f5f5; padding: 14px; border-radius: 6px; max-height: 260px; overflow-y: auto; line-height: 1.6; }
+  .btn { display: inline-block; background: #1a73e8; color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 16px; }
+  .btn:hover { background: #1558c0; }
+  .btn:disabled { background: #aaa; cursor: not-allowed; }
+  .status { margin-top: 14px; padding: 12px 16px; border-radius: 8px; font-size: 14px; display: none; }
+  .success { background: #e6f4ea; color: #1e6e3a; display: block; }
+  .error { background: #fce8e6; color: #a50000; display: block; }
+  .note { font-size: 12px; color: #999; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h2>Sonics AI — Email Sender</h2>
+<p class="sub">Envío automático via Resend desde info@sonics-ai.com</p>
+
+<div class="card">
+  <div class="label">De</div>
+  <div class="value">Sonics AI &lt;info@sonics-ai.com&gt;</div>
+
+  <div class="label">Para</div>
+  <div class="value" id="toField">sicmforex@gmail.com <span style="color:#888;font-size:12px;">(prueba)</span></div>
+
+  <div class="label">Subject</div>
+  <div class="value">Quick question about your incoming calls</div>
+
+  <div class="label">Cuerpo</div>
+  <div class="body-preview" id="bodyPreview"></div>
+
+  <button class="btn" onclick="sendEmail()" id="sendBtn">🚀 Enviar email</button>
+  <p class="note">⚠️ Abre este archivo desde un servidor local o súbelo a GitHub Pages para que funcione correctamente.</p>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+const RESEND_KEY = 're_Y4n4tGh8_DhGGGkiAcWQhFHPmnD9kW5eM';
+const TO = 'sicmforex@gmail.com';
+const SUBJECT = 'Quick question about your incoming calls';
+const BODY = `Hi Luis,
+
+I left you a voicemail earlier and wanted to follow up here. A lot of bilingual agents on high-volume teams I've been speaking with lately are dealing with the same challenge — more inbound calls than they can handle while they're out closing deals.
+
+Our company helps agents in that exact situation make their inbound call flow a lot more efficient — without replacing anyone. The idea: a 24/7 AI receptionist that answers every call in English or Spanish, handles common questions, books appointments, and sends confirmations automatically — so your pipeline keeps moving even when you're unavailable.
+
+Out of curiosity — how are you currently handling missed calls or overflow? Because even missing just 2–4 calls a day can quietly turn into a noticeable amount of lost commissions over time.
+
+If you're open to it, I can show you exactly how this works in a quick 15-minute Zoom. You'll be able to interact with the agent yourself and see how it handles real conversations. No pressure at all — just thought it might be worth a look.
+
+I have demo slots available every day from 12:00 PM to 8:00 PM PST — you're welcome to reply to this email with a day and time that works best for you, and I'll send the Zoom link right away. Or if it's easier, you can grab a time directly here: https://sonics-ai.com/booking
+
+Just to leave you with this — AI is here to simplify and strengthen your operations, not complicate them, and I'm confident this can help boost your overall productivity and efficiency by 20–30%.
+
+Looking forward to connecting.
+In the meantime you can learn more about our services at Sonics-ai.com`;
+
+document.getElementById('bodyPreview').textContent = BODY;
+
+async function sendEmail() {
+  const btn = document.getElementById('sendBtn');
+  const status = document.getElementById('status');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  status.className = 'status';
+  status.style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Sonics AI <info@sonics-ai.com>',
+        to: [TO],
+        subject: SUBJECT,
+        text: BODY
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      status.className = 'status success';
+      status.textContent = '✅ Email enviado! ID: ' + data.id;
+      btn.textContent = '✅ Enviado';
+    } else {
+      status.className = 'status error';
+      status.textContent = '❌ Error ' + res.status + ': ' + (data.message || JSON.stringify(data));
+      btn.disabled = false;
+      btn.textContent = '🚀 Enviar email';
+    }
+  } catch(e) {
+    status.className = 'status error';
+    status.textContent = '❌ Error CORS — abre este archivo desde un servidor, no directamente. Detalle: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = '🚀 Enviar email';
+  }
+}
+</script>
+</body>
+</html>
