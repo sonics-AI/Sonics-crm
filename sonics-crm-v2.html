@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonics AI — Lead Manager</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+.topbar { background: #0f172a; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+.topbar h1 { font-size: 18px; font-weight: 600; }
+.topbar span { font-size: 12px; color: #94a3b8; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #e2e8f0; }
+.stat-num { font-size: 28px; font-weight: 700; }
+.stat-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+.stat.blue .stat-num { color: #1a73e8; }
+.stat.purple .stat-num { color: #7c3aed; }
+.stat.green .stat-num { color: #059669; }
+.stat.orange .stat-num { color: #d97706; }
+.stat.red .stat-num { color: #dc2626; }
+.toolbar { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 220px; padding: 9px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #fff; }
+.search-box:focus { outline: none; border-color: #1a73e8; }
+select { padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer; }
+select:focus { outline: none; border-color: #1a73e8; }
+.btn { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: #1a73e8; color: #fff; }
+.btn-primary:hover { background: #1557b0; }
+.btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 6px; }
+.btn-edit { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+.btn-edit:hover { background: #e2e8f0; }
+.btn-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.btn-copy { background: #1a73e8; color: #fff; border: none; }
+.btn-copy.done { background: #059669; }
+.btn-send { background: #059669; color: #fff; border: none; }
+.btn-send:hover { background: #047857; }
+.btn-send.sending { background: #94a3b8; }
+.btn-send.done { background: #1a73e8; }
+.table-wrap { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+.table-head { display: grid; grid-template-columns: 2fr 1.2fr 1.5fr 1fr 1fr 1fr auto; padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.table-row { display: grid; grid-template-columns: 2fr 1.2fr 1.5fr 1fr 1fr 1fr auto; padding: 12px 16px; align-items: center; border-bottom: 1px solid #f1f5f9; }
+.table-row:hover { background: #f8fafc; }
+.table-row:last-child { border-bottom: none; }
+.company-name { font-weight: 600; font-size: 14px; }
+.company-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.cell-text { font-size: 13px; color: #475569; }
+.email-cell { display: flex; align-items: center; gap: 6px; }
+.email-text { font-size: 12px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+.actions { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.badge-Pending { background: #f1f5f9; color: #475569; }
+.badge-Called { background: #dbeafe; color: #1e40af; }
+.badge-Left-VM { background: #ede9fe; color: #5b21b6; }
+.badge-Email-Sent { background: #d1fae5; color: #065f46; }
+.badge-Interested { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.badge-Not-Interested { background: #fee2e2; color: #991b1b; }
+.badge-Follow-Up { background: #fef3c7; color: #92400e; }
+.empty { text-align: center; padding: 48px 24px; color: #94a3b8; font-size: 14px; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 740px; max-height: 93vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 1; }
+.modal-header h2 { font-size: 16px; font-weight: 600; }
+.modal-close { background: #f1f5f9; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: #475569; }
+.modal-body { padding: 20px 24px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 12px; font-weight: 500; color: #64748b; }
+.form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #1a202c; background: #fff; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #1a73e8; }
+.form-group textarea { resize: vertical; min-height: 72px; }
+.email-preview { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.email-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.email-preview-title { font-size: 13px; font-weight: 600; color: #334155; }
+.email-preview-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.email-body { font-size: 12px; color: #475569; white-space: pre-wrap; line-height: 1.7; max-height: 200px; overflow-y: auto; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: #fff; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { background: #dc2626; }
+.toast.success { background: #059669; }
+.notes-hl { background: #fffbeb; border-color: #fde68a !important; }
+.count-info { font-size: 12px; color: #94a3b8; margin-top: 10px; }
+.loading-row { text-align: center; padding: 32px; color: #94a3b8; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>⚡ Sonics AI — Lead Manager</h1>
+  <span id="topbar-count">Loading...</span>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat blue"><div class="stat-num" id="s-total">–</div><div class="stat-label">Total Leads</div></div>
+    <div class="stat purple"><div class="stat-num" id="s-called">–</div><div class="stat-label">Called / Left VM</div></div>
+    <div class="stat green"><div class="stat-num" id="s-email">–</div><div class="stat-label">Email Sent</div></div>
+    <div class="stat orange"><div class="stat-num" id="s-interest">–</div><div class="stat-label">Interested</div></div>
+    <div class="stat red"><div class="stat-num" id="s-followup">–</div><div class="stat-label">Follow Up</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input class="search-box" id="searchBox" placeholder="Search company, contact, email, city..." oninput="renderTable()">
+    <select id="filterIndustry" onchange="renderTable()">
+      <option value="">All Industries</option>
+      <option>Dental</option><option>Medical</option><option>Law Office</option>
+      <option>Real Estate</option><option>Chiropractic</option><option>Auto Dealer</option>
+      <option>Insurance</option><option>Spa & Wellness</option><option>Financial</option><option>Other</option>
+    </select>
+    <select id="filterStatus" onchange="renderTable()">
+      <option value="">All Status</option>
+      <option>Pending</option><option>Called</option><option>Left VM</option>
+      <option>Email Sent</option><option>Interested</option><option>Not Interested</option><option>Follow Up</option>
+    </select>
+    <button class="btn btn-primary" onclick="openModal(null)">+ Add Lead</button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-head">
+      <span>Company</span><span>Contact</span><span>Email</span>
+      <span>Industry</span><span>Status</span><span>Date</span><span>Actions</span>
+    </div>
+    <div id="tableBody"><div class="loading-row">Loading leads...</div></div>
+  </div>
+  <div class="count-info" id="countInfo"></div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeModalOutside(event)">
+<div class="modal">
+  <div class="modal-header">
+    <h2 id="modalTitle">Add Lead</h2>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group"><label>Company *</label><input id="f-company" oninput="updatePreview()"></div>
+      <div class="form-group"><label>Contact Name</label><input id="f-contact" oninput="updatePreview()"></div>
+      <div class="form-group"><label>Phone</label><input id="f-phone"></div>
+      <div class="form-group"><label>Email</label><input id="f-email" type="email"></div>
+      <div class="form-group"><label>Industry</label>
+        <select id="f-industry" onchange="updatePreview()">
+          <option value="">Select...</option>
+          <option>Dental</option><option>Medical</option><option>Law Office</option>
+          <option>Real Estate</option><option>Chiropractic</option><option>Auto Dealer</option>
+          <option>Insurance</option><option>Spa & Wellness</option><option>Financial</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Language (bilingual)</label><input id="f-language" oninput="updatePreview()" placeholder="Spanish, Japanese, Armenian..."></div>
+      <div class="form-group"><label>City</label><input id="f-city"></div>
+      <div class="form-group"><label>State</label><input id="f-state"></div>
+      <div class="form-group"><label>Website</label><input id="f-website"></div>
+      <div class="form-group"><label>Source</label><input id="f-source" placeholder="Indeed / ZipRecruiter"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="f-status">
+          <option>Pending</option><option>Called</option><option>Left VM</option>
+          <option>Email Sent</option><option>Interested</option><option>Not Interested</option><option>Follow Up</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Follow Up Date</label><input id="f-followdate" type="date"></div>
+      <div class="form-group full"><label>Job Description</label><textarea id="f-jobdesc" rows="2"></textarea></div>
+      <div class="form-group full">
+        <label>📞 Call Notes — used to auto-generate personalized email</label>
+        <textarea id="f-notes" class="notes-hl" rows="3" oninput="updatePreview()" placeholder="e.g. left vm, spoke with receptionist, owner busy call back next week, very interested..."></textarea>
+      </div>
+    </div>
+
+    <div class="email-preview">
+      <div class="email-preview-header">
+        <span class="email-preview-title">📧 Email — auto-generated from your notes</span>
+        <div class="email-preview-btns">
+          <button class="btn btn-sm btn-copy" id="btnCopyAddr" onclick="copyAddr()">📧 Copy Address</button>
+          <button class="btn btn-sm btn-copy" id="btnCopyBody" onclick="copyBody()">📋 Copy Body</button>
+          <button class="btn btn-sm btn-send" id="btnSend" onclick="sendEmail()">🚀 Send Email</button>
+        </div>
+      </div>
+      <div class="email-body" id="emailPreview"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-edit" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIGURATION — Replace with your actual keys
+// ============================================================
+const SUPABASE_URL = 'https://jgflbqmrzxwfdrgpijap.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZmxicW1yenh3ZmRyZ3BpamFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MDE2MTEsImV4cCI6MjA4OTQ3NzYxMX0.MKTBxkgbQdKc-qeZCpR87BAucd839bxpG4645sm3d8E';
+const RESEND_KEY = 're_Y4n4tGh8_DhGGGkiAcWQhFHPmnD9kW5eM';
+const FROM_EMAIL = 'info@sonics-ai.com';
+// ============================================================
+
+let leads = [];
+let editingId = null;
+
+// ---- Supabase helpers ----
+const sbHeaders = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+async function fetchLeads() {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/leads?order=id.desc', { headers: sbHeaders });
+  leads = await res.json();
+  renderTable(); updateStats();
+  document.getElementById('topbar-count').textContent = leads.length + ' leads';
+}
+
+async function insertLead(data) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/leads', { method: 'POST', headers: sbHeaders, body: JSON.stringify(data) });
+  return res.ok;
+}
+
+async function updateLead(id, data) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/leads?id=eq.' + id, { method: 'PATCH', headers: sbHeaders, body: JSON.stringify(data) });
+  return res.ok;
+}
+
+async function deleteLead(id) {
+  if (!confirm('Delete this lead?')) return;
+  await fetch(SUPABASE_URL + '/rest/v1/leads?id=eq.' + id, { method: 'DELETE', headers: sbHeaders });
+  showToast('Lead deleted', 'success');
+  fetchLeads();
+}
+
+// ---- Email generation ----
+function genEmail(lead) {
+  const ind = (lead.industry || '').toLowerCase();
+  const isRE = ind.includes('real estate');
+  const isDental = ind.includes('dental');
+  const isMedical = ind.includes('medical') || ind.includes('chiro');
+  const isLaw = ind.includes('law');
+  const clientWord = isRE ? 'clients' : 'patients';
+  const bizWord = isDental ? 'dental practice' : isMedical ? 'medical practice' : isLaw ? 'law firm' : isRE ? 'real estate brokerage' : 'business';
+  const notes = (lead.notes || '').toLowerCase();
+  const hasVM = notes.includes('vm') || notes.includes('voicemail') || notes.includes('mensaje');
+  const hasTalked = notes.includes('habl') || notes.includes('spoke') || notes.includes('recepcionista') || notes.includes('receptionist');
+  const firstName = lead.contact ? lead.contact.replace(/^(dr\.?\s*|mr\.?\s*|ms\.?\s*)/i,'').split(' ')[0] : 'there';
+  const langNote = lead.language ? ` — especially with ${lead.language}-speaking ${clientWord}` : '';
+  let opener = hasTalked
+    ? `I spoke with your team earlier today and left my information — I wanted to follow up here with a bit more detail.`
+    : hasVM
+    ? `I just left you a voicemail — I wanted to follow up here as well in case email is easier.`
+    : `I came across ${lead.company || 'your business'} and wanted to reach out directly.`;
+
+  return `Hi ${firstName},
+
+${opener}
+
+I noticed ${lead.company || 'your business'} is looking to hire a bilingual receptionist, which tells me managing incoming calls might be getting harder to keep up with${langNote}.
+
+We help ${bizWord}s in exactly that situation. Our AI voice receptionist answers calls instantly, 24/7, and speaks any language your ${clientWord} need — Spanish, English, Japanese, Armenian, Mandarin, and more — switching automatically based on the caller. It books appointments, handles common questions, and sends confirmations automatically, without replacing your existing team.
+
+Missing just 2–4 calls a day adds up to significant lost revenue over time.
+
+If you're open to it, I'd love to show you exactly how this works in a quick 15-minute Zoom call. You'll be able to interact with the AI agent yourself and hear how it handles real conversations in real time — no pitch, just a live test drive. Once you confirm a time, I'll send you the Zoom link right away.
+
+You can call me directly to schedule the free demo or you can grab a time that works for you directly here: https://sonics-ai.com/booking
+
+Looking forward to connecting.`;
+}
+
+function updatePreview() {
+  document.getElementById('emailPreview').textContent = genEmail(getFormData());
+}
+
+function getFormData() {
+  return {
+    company: document.getElementById('f-company').value.trim(),
+    contact: document.getElementById('f-contact').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    industry: document.getElementById('f-industry').value,
+    language: document.getElementById('f-language').value.trim(),
+    city: document.getElementById('f-city').value.trim(),
+    state: document.getElementById('f-state').value.trim(),
+    website: document.getElementById('f-website').value.trim(),
+    source: document.getElementById('f-source').value.trim(),
+    status: document.getElementById('f-status').value,
+    follow_date: document.getElementById('f-followdate').value,
+    job_description: document.getElementById('f-jobdesc').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    date: new Date().toISOString().slice(0,10)
+  };
+}
+
+// ---- Send Email via Resend ----
+async function sendEmail() {
+  const email = document.getElementById('f-email').value.trim();
+  const body = document.getElementById('emailPreview').textContent;
+  const company = document.getElementById('f-company').value.trim();
+  if (!email) { showToast('No email address entered', 'error'); return; }
+  if (RESEND_KEY === 'TU_RESEND_KEY_AQUI') { showToast('Add your Resend API key first', 'error'); return; }
+
+  const btn = document.getElementById('btnSend');
+  btn.textContent = '⏳ Sending...'; btn.classList.add('sending'); btn.disabled = true;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [email],
+        subject: 'Quick question about your incoming calls',
+        text: body
+      })
+    });
+    const result = await res.json();
+    if (res.ok) {
+      showToast('✅ Email sent to ' + email, 'success');
+      btn.textContent = '✅ Sent!'; btn.classList.remove('sending'); btn.classList.add('done');
+      document.getElementById('f-status').value = 'Email Sent';
+      setTimeout(() => { btn.textContent = '🚀 Send Email'; btn.classList.remove('done'); btn.disabled = false; }, 3000);
+    } else {
+      showToast('Error: ' + (result.message || 'Failed to send'), 'error');
+      btn.textContent = '🚀 Send Email'; btn.classList.remove('sending'); btn.disabled = false;
+    }
+  } catch(e) {
+    showToast('Connection error — check your Resend key', 'error');
+    btn.textContent = '🚀 Send Email'; btn.classList.remove('sending'); btn.disabled = false;
+  }
+}
+
+// ---- Copy helpers ----
+function copyAddr() {
+  const email = document.getElementById('f-email').value.trim();
+  if (!email) { showToast('No email address', 'error'); return; }
+  navigator.clipboard.writeText(email);
+  const btn = document.getElementById('btnCopyAddr');
+  btn.textContent = '✅ Copied!'; btn.classList.add('done');
+  setTimeout(() => { btn.textContent = '📧 Copy Address'; btn.classList.remove('done'); }, 2000);
+}
+
+function copyBody() {
+  navigator.clipboard.writeText(document.getElementById('emailPreview').textContent);
+  const btn = document.getElementById('btnCopyBody');
+  btn.textContent = '✅ Copied!'; btn.classList.add('done');
+  setTimeout(() => { btn.textContent = '📋 Copy Body'; btn.classList.remove('done'); }, 2000);
+}
+
+function copyRowEmail(email, btn) {
+  navigator.clipboard.writeText(email);
+  const orig = btn.textContent; btn.textContent = '✅'; btn.classList.add('done');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('done'); }, 2000);
+}
+
+// ---- Modal ----
+function openModal(lead) {
+  editingId = lead ? lead.id : null;
+  document.getElementById('modalTitle').textContent = lead ? 'Edit Lead' : 'Add New Lead';
+  const l = lead || {};
+  document.getElementById('f-company').value = l.company || '';
+  document.getElementById('f-contact').value = l.contact || '';
+  document.getElementById('f-phone').value = l.phone || '';
+  document.getElementById('f-email').value = l.email || '';
+  document.getElementById('f-industry').value = l.industry || '';
+  document.getElementById('f-language').value = l.language || '';
+  document.getElementById('f-city').value = l.city || '';
+  document.getElementById('f-state').value = l.state || '';
+  document.getElementById('f-website').value = l.website || '';
+  document.getElementById('f-source').value = l.source || '';
+  document.getElementById('f-status').value = l.status || 'Pending';
+  document.getElementById('f-followdate').value = l.follow_date || '';
+  document.getElementById('f-jobdesc').value = l.job_description || '';
+  document.getElementById('f-notes').value = l.notes || '';
+  const sendBtn = document.getElementById('btnSend');
+  sendBtn.textContent = '🚀 Send Email'; sendBtn.className = 'btn btn-sm btn-send'; sendBtn.disabled = false;
+  updatePreview();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target.id === 'overlay') closeModal(); }
+
+async function saveLead() {
+  const data = getFormData();
+  if (!data.company) { showToast('Company name is required', 'error'); return; }
+  let ok;
+  if (editingId) ok = await updateLead(editingId, data);
+  else ok = await insertLead(data);
+  if (ok) { showToast(editingId ? 'Lead updated ✅' : 'Lead added ✅', 'success'); closeModal(); fetchLeads(); }
+  else showToast('Error saving lead', 'error');
+}
+
+// ---- Table ----
+function badgeClass(s) { return 'badge badge-' + (s||'Pending').replace(/\s+/g,'-'); }
+
+function renderTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const ind = document.getElementById('filterIndustry').value;
+  const st = document.getElementById('filterStatus').value;
+  const filtered = leads.filter(l => {
+    const mi = !ind || l.industry === ind;
+    const ms = !st || l.status === st;
+    const mq = !q || [l.company,l.contact,l.email,l.city,l.state,l.phone].some(f=>(f||'').toLowerCase().includes(q));
+    return mi && ms && mq;
+  });
+  const body = document.getElementById('tableBody');
+  if (!filtered.length) { body.innerHTML = '<div class="empty">📋 No leads found. Click "+ Add Lead" to get started.</div>'; document.getElementById('countInfo').textContent=''; return; }
+  body.innerHTML = filtered.map(l => `
+    <div class="table-row">
+      <div><div class="company-name">${l.company||'—'}</div><div class="company-sub">${l.city||''}${l.state?', '+l.state:''} ${l.industry?'· '+l.industry:''}</div></div>
+      <div class="cell-text">${l.contact||'—'}<br><span style="font-size:11px;color:#94a3b8">${l.phone||''}</span></div>
+      <div class="email-cell">
+        <span class="email-text" title="${l.email||''}">${l.email||'—'}</span>
+        ${l.email?`<button class="btn btn-sm btn-copy" onclick="copyRowEmail('${l.email}',this)">📧</button>`:''}
+      </div>
+      <div class="cell-text" style="font-size:12px">${l.industry||'—'}</div>
+      <div><span class="${badgeClass(l.status)}">${l.status||'Pending'}</span></div>
+      <div class="cell-text" style="font-size:11px;color:#94a3b8">${l.date||l.created_at?.slice(0,10)||'—'}</div>
+      <div class="actions">
+        <button class="btn btn-sm btn-edit" onclick='openModal(${JSON.stringify(l)})'>Edit</button>
+        <button class="btn btn-sm btn-delete" onclick="deleteLead(${l.id})">✕</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('countInfo').textContent = `Showing ${filtered.length} of ${leads.length} leads`;
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent = leads.length;
+  document.getElementById('s-called').textContent = leads.filter(l=>['Called','Left VM'].includes(l.status)).length;
+  document.getElementById('s-email').textContent = leads.filter(l=>l.status==='Email Sent').length;
+  document.getElementById('s-interest').textContent = leads.filter(l=>l.status==='Interested').length;
+  document.getElementById('s-followup').textContent = leads.filter(l=>l.status==='Follow Up').length;
+  document.getElementById('topbar-count').textContent = leads.length + ' leads';
+}
+
+// ---- Toast ----
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+fetchLeads();
+</script>
+</body>
+</html>
