@@ -196,7 +196,7 @@ select:focus { outline: none; border-color: #1a73e8; }
 // ============================================================
 const SUPABASE_URL = 'https://jgflbqmrzxwfdrgpijap.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZmxicW1yenh3ZmRyZ3BpamFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MDE2MTEsImV4cCI6MjA4OTQ3NzYxMX0.MKTBxkgbQdKc-qeZCpR87BAucd839bxpG4645sm3d8E';
-const RESEND_KEY = 'TU_RESEND_KEY_AQUI';
+const RESEND_KEY = 're_Y4n4tGh8_DhGGGkiAcWQhFHPmnD9kW5eM';
 const FROM_EMAIL = 'info@sonics-ai.com';
 // ============================================================
 
@@ -297,7 +297,7 @@ async function sendEmail() {
   const body = document.getElementById('emailPreview').textContent;
   const company = document.getElementById('f-company').value.trim();
   if (!email) { showToast('No email address entered', 'error'); return; }
-  if (RESEND_KEY === 'TU_RESEND_KEY_AQUI') { showToast('Add your Resend API key first', 'error'); return; }
+  if (RESEND_KEY === 're_Y4n4tGh8_DhGGGkiAcWQhFHPmnD9kW5eM') { showToast('Add your Resend API key first', 'error'); return; }
 
   const btn = document.getElementById('btnSend');
   btn.textContent = '⏳ Sending...'; btn.classList.add('sending'); btn.disabled = true;
